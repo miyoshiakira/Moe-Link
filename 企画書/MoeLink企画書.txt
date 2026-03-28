@@ -1,0 +1,60 @@
+学習用・スモールスタート向けに、将来的な拡張性（Claudeへのインプット）も考慮した「アニメ美少女AI通話RAGアプリ」の企画書とアーキテクチャ設計を作成しました。
+
+---
+
+# 企画書：アニメ美少女AI通話RAGシステム「Moe-Link (仮)」
+
+## 1. 概要
+本プロジェクトは、Azure OpenAI Serviceの最新モデルを活用し、Webブラウザ上でアニメキャラクターと「リアルタイムで会話」できる体験を構築する。キャラクター設定や過去の思い出をRAG（検索拡張生成）で管理することで、一貫性のあるキャラクター性を維持する。
+
+## 2. システムアーキテクチャ設計
+「低遅延」と「開発のシンプルさ」を両立するため、Azureネイティブな構成を採用する。
+
+### 構成図案
+1.  **Frontend**: React (Vite) + Tailwind CSS + Azure SDK for JS
+2.  **Backend (API Gate)**: Azure Functions (Node.js/Python)
+3.  **Core Engine**: Azure OpenAI Service (GPT-4o Realtime API)
+4.  **Knowledge Base (RAG)**: Azure AI Search (Vector Store)
+5.  **Voice Interaction**: Azure AI Speech (WebSocket接続)
+
+### 処理フロー
+1.  **音声入力**: ブラウザのマイクからユーザーの音声をキャプチャ。
+2.  **リアルタイム中継**: **GPT-4o Realtime API**へ音声をストリーミング。
+3.  **知識検索 (RAG)**: 会話の文脈からキーワードや埋め込みベクトルを抽出し、**Azure AI Search**からキャラの設定（好きな食べ物、口癖、共有した思い出）を検索。
+4.  **推論・合成**: 検索結果をコンテキストとして追加し、**Azure AI Speech**のカスタム音声（またはアニメ向けプリセット）で返答音声を生成。
+5.  **音声出力**: ブラウザ側でAIの音声を再生。
+
+---
+
+## 3. RAGのデータ設計
+学習用として、以下の2種類のデータをRAGに組み込む。
+
+| データ種別 | 内容 | 格納先 |
+| :--- | :--- | :--- |
+| **キャラクター設定** | 性格、口癖、世界観、ユーザーとの関係性設定。 | Azure AI Search (Index: `char-profile`) |
+| **エピソード記憶** | 「昨日〇〇に行ったね」といった、過去の会話の要約。 | Azure AI Search (Index: `user-memory`) |
+
+---
+
+## 4. 技術選定の理由 (Claude向け要点)
+* **GPT-4o Realtime API**: 従来の「STT → LLM → TTS」という3ステップによる遅延を解消し、自然な相槌や割り込みを可能にするため。
+* **Azure AI Search**: 日本語の形態素解析に強く、セマンティック検索（意味検索）により「キャラらしい」応答の精度を上げるため。
+* **Function Calling**: RAGの検索実行をAI自身に判断させるためのトリガーとして使用。
+
+---
+
+## 5. スモールスタート用・開発ロードマップ
+* **Phase 1**: Azure OpenAI StudioのプレイグラウンドでRealtime APIと音声出力を試す。
+* **Phase 2**: Azure AI Searchに簡単なテキスト（キャラ設定）をインポートし、検索連携を確認。
+* **Phase 3**: Webフロントエンドを構築し、WebSocketで音声ストリーミングを実装。
+
+---
+
+## 6. Claudeへの依頼用プロンプト案
+Claudeにこの企画書を渡す際は、以下の指示を添えてください。
+
+> 「上記のAzureアーキテクチャに基づき、特に**Azure OpenAI Realtime APIとAzure AI Searchを連携させるためのPython（またはNode.js）のコードサンプル**を作成してください。RAGによってキャラクターの口癖（例：語尾に『～だぞ』をつける）や、特定の設定（例：好きなものはイチゴ）を反映させるプロンプトエンジニアリングのコツも教えてください。」
+
+---
+
+次は、Azure Portalでの具体的なリソース作成順序を確認しましょうか？それとも、フロントエンドの画面イメージについて深掘りしますか？

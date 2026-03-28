@@ -1,0 +1,26 @@
+# 依存パッケージ
+node_modules/
+
+# 環境変数（認証情報を含むため必ず除外）
+.env
+.env.local
+.env.*.local
+
+# ビルド成果物
+dist/
+build/
+
+# ログ
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# エディタ
+.vscode/
+.idea/
+
+# Claude Code
+.claude/
