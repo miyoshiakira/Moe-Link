@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "seed": "node scripts/seedSearch.js"
+    "seed": "node scripts/seedSearch.js",
+    "test:connection": "node scripts/testConnection.js"
   },
   "dependencies": {
     "@azure/search-documents": "^12.1.0",
