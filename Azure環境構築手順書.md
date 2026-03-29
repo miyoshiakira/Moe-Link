@@ -19,7 +19,7 @@ Moe-Link の動作に必要な Azure リソースを作成する手順です。
 | リソース種別 | 推奨名 | 用途 |
 |---|---|---|
 | リソースグループ | `rg-moelink` | 全リソースをまとめる入れ物 |
-| Azure OpenAI Service | `aoai-moelink` | gpt-realtime-1.5（音声通話） |
+| Azure OpenAI Service | `aoai-moe-link` | gpt-realtime-1.5（音声通話） |
 | Azure AI Search | `srch-moelink` | RAG（キャラ設定・記憶の検索） |
 
 ---
@@ -52,7 +52,7 @@ Moe-Link の動作に必要な Azure リソースを作成する手順です。
 | サブスクリプション | 手順1と同じ |
 | リソースグループ | `rg-moelink` |
 | リージョン | `East US 2` ※後述の注意点を参照 |
-| 名前 | `aoai-moelink`（グローバル一意） |
+| 名前 | `aoai-moe-link`（グローバル一意） |
 | 価格レベル | `Standard S0` |
 
 > **リージョンの注意点**
@@ -86,13 +86,13 @@ Moe-Link の動作に必要な Azure リソースを作成する手順です。
 
 ### 2-3. エンドポイントと API キーの取得
 
-1. Azure Portal で `aoai-moelink` リソースを開く
+1. Azure Portal で `aoai-moe-link` リソースを開く
 2. 左メニューの **「キーとエンドポイント」** を選択
 3. 以下をコピーして `.env` に貼り付ける
 
 | `.env` の変数名 | 取得場所 |
 |---|---|
-| `AZURE_OPENAI_ENDPOINT` | 「エンドポイント」欄（例：`https://aoai-moelink.openai.azure.com`）末尾のスラッシュは不要 |
+| `AZURE_OPENAI_ENDPOINT` | 「エンドポイント」欄（例：`https://aoai-moe-link.openai.azure.com`）末尾のスラッシュは不要 |
 | `AZURE_OPENAI_API_KEY` | 「キー1」または「キー2」 |
 
 ---
@@ -136,7 +136,7 @@ Moe-Link の動作に必要な Azure リソースを作成する手順です。
 `backend/.env` を以下のように設定する（`.env.example` を `.env` にコピーして編集）。
 
 ```env
-AZURE_OPENAI_ENDPOINT=https://aoai-moelink.openai.azure.com
+AZURE_OPENAI_ENDPOINT=https://aoai-moe-link.openai.azure.com
 AZURE_OPENAI_API_KEY=（手順2-3でコピーしたキー）
 AZURE_OPENAI_DEPLOYMENT=gpt-realtime-1.5
 
