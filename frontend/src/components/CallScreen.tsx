@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRealtimeCall } from '../hooks/useRealtimeCall'
 
-function useCallTimer(active) {
+function useCallTimer(active: boolean): string {
   const [elapsed, setElapsed] = useState(0)
   useEffect(() => {
     if (!active) { setElapsed(0); return }
@@ -13,7 +13,12 @@ function useCallTimer(active) {
   return `${m}:${s}`
 }
 
-function AudioWave({ active, color = 'pink' }) {
+interface AudioWaveProps {
+  active: boolean
+  color?: 'pink' | 'purple'
+}
+
+function AudioWave({ active, color = 'pink' }: AudioWaveProps) {
   const bars = [3, 5, 8, 6, 10, 7, 4, 9, 5, 3]
   const colorClass = color === 'pink' ? 'bg-pink-400' : 'bg-purple-400'
   return (
@@ -35,7 +40,11 @@ function AudioWave({ active, color = 'pink' }) {
   )
 }
 
-export default function CallScreen({ onEnd }) {
+interface Props {
+  onEnd: () => void
+}
+
+export default function CallScreen({ onEnd }: Props) {
   const {
     phase, isMuted, aiSpeaking, userSpeaking,
     aiTranscript, error, connect, disconnect, toggleMute,
@@ -120,7 +129,7 @@ export default function CallScreen({ onEnd }) {
           ) : userSpeaking ? (
             <>
               <AudioWave active color="purple" />
-              <p className="text-purple-300 text-sm">あなたの声を聞いてるだぞ…</p>
+              <p className="text-purple-300 text-sm">あなたの声を聞いてるよ…</p>
             </>
           ) : (
             <p className="text-purple-300 text-xl font-mono tabular-nums">{timer}</p>
@@ -129,8 +138,25 @@ export default function CallScreen({ onEnd }) {
 
         {/* AI transcript（ストリーミングテキスト） */}
         {aiTranscript && (
-          <div className="w-full bg-purple-950/50 border border-purple-700/30 rounded-2xl px-4 py-3 text-sm text-purple-100 text-center leading-relaxed max-h-20 overflow-y-auto">
-            {aiTranscript}
+          <div className="w-full">
+            {/* ラベル行 */}
+            <div className="flex items-center gap-2 mb-2 px-1">
+              <span className="text-sm leading-none">🌸</span>
+              <span className="text-[10px] font-semibold tracking-[0.2em] text-pink-300 uppercase">Moe</span>
+              <div className="h-px flex-1 bg-gradient-to-r from-pink-400/50 to-transparent" />
+            </div>
+
+            {/* 吹き出し本体 */}
+            <div className="relative bg-gradient-to-br from-[#2a0f3d]/90 to-[#180820]/90 rounded-2xl rounded-tl-sm border border-pink-400/20 px-5 py-4 shadow-[0_0_24px_rgba(244,114,182,0.12),inset_0_1px_0_rgba(255,255,255,0.04)]">
+              {/* 装飾クォート */}
+              <span className="absolute top-2 left-3 text-3xl text-pink-400/15 font-serif leading-none select-none">"</span>
+
+              <p className="relative text-sm text-purple-50 leading-relaxed pl-3 max-h-20 overflow-y-auto">
+                {aiTranscript}
+                {/* ストリーミングカーソル */}
+                <span className="inline-block w-[2px] h-[0.9em] bg-pink-400 ml-0.5 align-text-bottom rounded-full animate-pulse" />
+              </p>
+            </div>
           </div>
         )}
       </div>

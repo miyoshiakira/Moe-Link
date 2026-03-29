@@ -4,7 +4,12 @@ const MEMORIES = [
   { icon: '🎮', text: '一緒にゲームした記憶' },
 ]
 
-export default function CharacterPanel({ isSpeaking, isListening }) {
+interface Props {
+  isSpeaking: boolean
+  isListening: boolean
+}
+
+export default function CharacterPanel({ isSpeaking, isListening }: Props) {
   return (
     <aside className="w-72 flex-shrink-0 flex flex-col border-r border-purple-900/40 bg-black/10">
       {/* Character display */}
@@ -28,7 +33,6 @@ export default function CharacterPanel({ isSpeaking, isListening }) {
                 : 'border-purple-700/60'
             }`}
           >
-            {/* Placeholder avatar — will be replaced with actual character art */}
             <div className="w-full h-full bg-gradient-to-b from-[#2d1a4a] to-[#1a0f2e] flex items-center justify-center">
               <span className="text-7xl select-none">🌸</span>
             </div>
@@ -56,7 +60,7 @@ export default function CharacterPanel({ isSpeaking, isListening }) {
         <div className="flex items-center gap-2 bg-purple-950/50 border border-purple-700/30 rounded-full px-3 py-1.5 text-xs">
           <span>{isSpeaking ? '😊' : isListening ? '👂' : '😴'}</span>
           <span className="text-purple-300">
-            {isSpeaking ? '話し中…' : isListening ? '聞いてるだぞ…' : '待機中'}
+            {isSpeaking ? '話し中…' : isListening ? '聞いてるよ…' : '待機中'}
           </span>
         </div>
       </div>

@@ -3,6 +3,16 @@ import { useState, useRef, useCallback } from 'react'
 const BACKEND_WS = 'ws://localhost:3001/realtime'
 const SAMPLE_RATE = 24000 // Azure OpenAI Realtime API が期待するサンプルレート
 
+export type Phase = 'idle' | 'connecting' | 'connected' | 'error'
+
+type ServerMessage =
+  | { type: 'status';           state: string }
+  | { type: 'audio.delta';      data: string }
+  | { type: 'audio.done' }
+  | { type: 'transcript.ai';    text: string }
+  | { type: 'transcript.user';  text: string }
+  | { type: 'error';            message: string }
+
 /**
  * バックエンド WebSocket を通じて Azure OpenAI Realtime API と通信するフック
  *
@@ -19,25 +29,25 @@ const SAMPLE_RATE = 24000 // Azure OpenAI Realtime API が期待するサンプ�
  *   toggleMute() : ミュート切り替え
  */
 export function useRealtimeCall() {
-  const [phase,          setPhase]          = useState('idle')
+  const [phase,          setPhase]          = useState<Phase>('idle')
   const [isMuted,        setIsMuted]        = useState(false)
   const [aiSpeaking,     setAiSpeaking]     = useState(false)
   const [userSpeaking,   setUserSpeaking]   = useState(false)
   const [aiTranscript,   setAiTranscript]   = useState('')
   const [userTranscript, setUserTranscript] = useState('')
-  const [error,          setError]          = useState(null)
+  const [error,          setError]          = useState<string | null>(null)
 
-  const wsRef           = useRef(null)
-  const audioCtxRef     = useRef(null)
-  const streamRef       = useRef(null)
-  const isMutedRef      = useRef(false)       // closure から最新値を参照するため
-  const audioChunksRef  = useRef([])          // 1ターン分の音声チャンクを蓄積
-  const scheduledEndRef = useRef(0)           // 次の再生開始時刻（AudioContext.currentTime）
+  const wsRef           = useRef<WebSocket | null>(null)
+  const audioCtxRef     = useRef<AudioContext | null>(null)
+  const streamRef       = useRef<MediaStream | null>(null)
+  const isMutedRef      = useRef(false)          // closure から最新値を参照するため
+  const audioChunksRef  = useRef<string[]>([])   // 1ターン分の音声チャンクを蓄積
+  const scheduledEndRef = useRef(0)              // 次の再生開始時刻（AudioContext.currentTime）
 
   // ────────────────────────────────────────
   // サーバーメッセージのハンドラ
   // ────────────────────────────────────────
-  const handleMessage = useCallback((msg) => {
+  const handleMessage = useCallback((msg: ServerMessage) => {
     switch (msg.type) {
       case 'status':
         setAiSpeaking(msg.state === 'speaking')
@@ -81,7 +91,7 @@ export function useRealtimeCall() {
   // ────────────────────────────────────────
   // PCM16 base64 チャンクをデコードして再生
   // ────────────────────────────────────────
-  function flushAudioChunks(flush) {
+  function flushAudioChunks(flush: boolean) {
     const ctx = audioCtxRef.current
     if (!ctx || audioChunksRef.current.length === 0) return
 
@@ -90,7 +100,7 @@ export function useRealtimeCall() {
 
     // base64 → Uint8Array
     const combined = chunks.join('')
-    let binary
+    let binary: string
     try {
       binary = atob(combined)
     } catch {
@@ -140,6 +150,12 @@ export function useRealtimeCall() {
       const ctx = new AudioContext({ sampleRate: SAMPLE_RATE })
       audioCtxRef.current = ctx
 
+      // ブラウザのオートプレイポリシーで suspended になる場合があるため強制 resume
+      if (ctx.state === 'suspended') {
+        await ctx.resume()
+      }
+      console.log('[AudioContext] state:', ctx.state, '/ sampleRate:', ctx.sampleRate)
+
       // AudioWorklet をロード
       await ctx.audioWorklet.addModule('/pcm-processor.js')
 
@@ -152,19 +168,37 @@ export function useRealtimeCall() {
       wsRef.current = ws
 
       ws.onopen = () => {
+        console.log('[WS] バックエンド接続完了 / AudioContext state:', ctx.state)
         setPhase('connected')
 
+        // AudioContext がまだ suspended なら resume を再試行
+        if (ctx.state === 'suspended') {
+          ctx.resume().then(() => console.log('[AudioContext] resume 完了'))
+        }
+
+        let audioSentCount = 0
         // マイク音声を WebSocket 経由でバックエンドへ送信
-        worklet.port.onmessage = (e) => {
+        // e.data は ArrayBuffer（ワークレットから転送）→ メインスレッドで base64 変換
+        worklet.port.onmessage = (e: MessageEvent<ArrayBuffer>) => {
           if (ws.readyState === WebSocket.OPEN && !isMutedRef.current) {
-            ws.send(JSON.stringify({ type: 'audio.append', data: e.data }))
+            const bytes = new Uint8Array(e.data)
+            let binary = ''
+            const chunkSize = 8192
+            for (let i = 0; i < bytes.length; i += chunkSize) {
+              binary += String.fromCharCode(...Array.from(bytes.subarray(i, i + chunkSize)))
+            }
+            const base64 = btoa(binary)
+            if (audioSentCount < 5) {
+              console.log('[Audio] 送信中... count:', ++audioSentCount)
+            }
+            ws.send(JSON.stringify({ type: 'audio.append', data: base64 }))
           }
         }
       }
 
-      ws.onmessage = (e) => {
+      ws.onmessage = (e: MessageEvent<string>) => {
         try {
-          handleMessage(JSON.parse(e.data))
+          handleMessage(JSON.parse(e.data) as ServerMessage)
         } catch { /* ignore parse errors */ }
       }
 
@@ -173,7 +207,8 @@ export function useRealtimeCall() {
         setPhase('error')
       }
 
-      ws.onclose = () => {
+      ws.onclose = (event: CloseEvent) => {
+        console.log('[WS] 切断:', event.code, event.reason, '/ wasClean:', event.wasClean)
         setPhase('idle')
         setAiSpeaking(false)
         setUserSpeaking(false)
@@ -181,7 +216,7 @@ export function useRealtimeCall() {
 
     } catch (err) {
       console.error('[useRealtimeCall] 接続エラー:', err)
-      setError(err.message)
+      setError(err instanceof Error ? err.message : String(err))
       setPhase('error')
       cleanup()
     }

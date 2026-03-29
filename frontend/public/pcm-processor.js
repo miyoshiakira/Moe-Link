@@ -1,10 +1,10 @@
 /**
  * AudioWorklet プロセッサ
  * マイク入力の Float32 サンプルを PCM16 (24kHz) に変換し、
- * base64 文字列としてメインスレッドに送信する。
+ * ArrayBuffer としてメインスレッドに転送する。
  *
- * Azure OpenAI GPT-4o Realtime API は PCM16 / 24000Hz を期待している。
- * AudioContext を { sampleRate: 24000 } で作成することでリサンプリングを回避する。
+ * ※ AudioWorkletGlobalScope には btoa が存在しないため、
+ *    base64 変換はメインスレッド側（useRealtimeCall.js）で行う。
  */
 class PCMProcessor extends AudioWorkletProcessor {
   process(inputs) {
@@ -20,15 +20,8 @@ class PCMProcessor extends AudioWorkletProcessor {
       int16[i] = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff
     }
 
-    // ArrayBuffer → base64
-    const bytes  = new Uint8Array(int16.buffer)
-    let binary   = ''
-    const chunk  = 8192
-    for (let i = 0; i < bytes.length; i += chunk) {
-      binary += String.fromCharCode(...bytes.subarray(i, i + chunk))
-    }
-
-    this.port.postMessage(btoa(binary))
+    // ArrayBuffer をメインスレッドへ転送（ゼロコピー）
+    this.port.postMessage(int16.buffer, [int16.buffer])
     return true
   }
 }

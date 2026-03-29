@@ -1,9 +1,14 @@
-export default function StatusBar({ isListening, isSpeaking }) {
+interface Props {
+  isListening: boolean
+  isSpeaking: boolean
+}
+
+export default function StatusBar({ isListening, isSpeaking }: Props) {
   const status = isSpeaking
-    ? { label: 'AIが話し中', color: 'text-pink-400', dot: 'bg-pink-400' }
+    ? { label: 'AIが話し中', color: 'text-pink-400',  dot: 'bg-pink-400' }
     : isListening
     ? { label: '音声認識中…', color: 'text-purple-300', dot: 'bg-purple-400' }
-    : { label: '接続済み', color: 'text-green-400', dot: 'bg-green-400' }
+    : { label: '接続済み',    color: 'text-green-400',  dot: 'bg-green-400' }
 
   return (
     <div className="flex items-center gap-4">

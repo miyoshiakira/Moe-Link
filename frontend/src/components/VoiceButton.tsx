@@ -1,4 +1,9 @@
-export default function VoiceButton({ isListening, onToggle }) {
+interface Props {
+  isListening: boolean
+  onToggle: () => void
+}
+
+export default function VoiceButton({ isListening, onToggle }: Props) {
   return (
     <button
       onClick={onToggle}

@@ -4,20 +4,21 @@ import ChatPanel from './components/ChatPanel'
 import VoiceButton from './components/VoiceButton'
 import StatusBar from './components/StatusBar'
 import CallScreen from './components/CallScreen'
+import type { Message } from './types'
 import './index.css'
 
-const MOCK_MESSAGES = [
-  { id: 1, role: 'ai', text: 'おかえりなさい！今日も会えて嬉しいだぞ〜♪', time: '14:32' },
+const MOCK_MESSAGES: Message[] = [
+  { id: 1, role: 'ai', text: 'おかえりなさい！今日も会えて嬉しいよ〜♪', time: '14:32' },
   { id: 2, role: 'user', text: '今日の調子はどう？', time: '14:32' },
-  { id: 3, role: 'ai', text: 'バッチリだぞ！ちょうど昨日みんなで行った公園のこと考えてたとこだぞ。楽しかったね〜', time: '14:33' },
+  { id: 3, role: 'ai', text: 'バッチリだよ！ちょうど昨日みんなで行った公園のこと考えてたとこなの。楽しかったね〜', time: '14:33' },
 ]
 
 export default function App() {
   const [isListening, setIsListening] = useState(false)
-  const [isSpeaking, setIsSpeaking] = useState(false)
-  const [messages, setMessages] = useState(MOCK_MESSAGES)
-  const [inputText, setInputText] = useState('')
-  const [inCall, setInCall] = useState(false)
+  const [isSpeaking, setIsSpeaking]   = useState(false)
+  const [messages, setMessages]       = useState<Message[]>(MOCK_MESSAGES)
+  const [inputText, setInputText]     = useState('')
+  const [inCall, setInCall]           = useState(false)
 
   const handleVoiceToggle = () => {
     if (isListening) {
@@ -27,8 +28,8 @@ export default function App() {
         const now = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })
         setMessages(prev => [
           ...prev,
-          { id: Date.now(), role: 'user', text: '（音声入力）', time: now },
-          { id: Date.now() + 1, role: 'ai', text: 'ふふっ、それは面白いだぞ！もっと聞かせてほしいだぞ〜♪', time: now },
+          { id: Date.now(),     role: 'user', text: '（音声入力）', time: now },
+          { id: Date.now() + 1, role: 'ai',   text: 'ふふっ、それは面白いね！もっと聞かせてほしいな〜♪', time: now },
         ])
         setTimeout(() => setIsSpeaking(false), 2500)
       }, 500)
@@ -46,7 +47,7 @@ export default function App() {
       setIsSpeaking(true)
       setMessages(prev => [
         ...prev,
-        { id: Date.now(), role: 'ai', text: 'なるほどだぞ〜！それって昨日の話と関係あるだぞ？詳しく教えてほしいだぞ♪', time: now },
+        { id: Date.now(), role: 'ai', text: 'なるほどね〜！それって昨日の話と関係あるのかな？詳しく教えてほしいな♪', time: now },
       ])
       setTimeout(() => setIsSpeaking(false), 2500)
     }, 800)
@@ -93,7 +94,7 @@ export default function App() {
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSendText()}
-                  placeholder="テキストでも話しかけられるだぞ…"
+                  placeholder="テキストでも話しかけてね…"
                   className="flex-1 bg-transparent text-sm text-purple-100 placeholder:text-purple-600 outline-none"
                 />
                 <button

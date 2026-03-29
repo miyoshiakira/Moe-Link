@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/types.ts","./src/components/callscreen.tsx","./src/components/characterpanel.tsx","./src/components/chatpanel.tsx","./src/components/statusbar.tsx","./src/components/voicebutton.tsx","./src/hooks/userealtimecall.ts"],"version":"5.9.3"}

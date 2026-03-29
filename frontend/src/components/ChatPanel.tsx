@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import type { Message } from '../types'
 
 function TypingIndicator() {
   return (
@@ -17,7 +18,7 @@ function TypingIndicator() {
   )
 }
 
-function Message({ msg }) {
+function ChatMessage({ msg }: { msg: Message }) {
   const isAi = msg.role === 'ai'
   return (
     <div className={`flex mb-4 ${isAi ? 'justify-start' : 'justify-end'}`}>
@@ -46,8 +47,13 @@ function Message({ msg }) {
   )
 }
 
-export default function ChatPanel({ messages, isSpeaking }) {
-  const bottomRef = useRef(null)
+interface Props {
+  messages: Message[]
+  isSpeaking: boolean
+}
+
+export default function ChatPanel({ messages, isSpeaking }: Props) {
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -64,7 +70,7 @@ export default function ChatPanel({ messages, isSpeaking }) {
         </div>
 
         {messages.map(msg => (
-          <Message key={msg.id} msg={msg} />
+          <ChatMessage key={msg.id} msg={msg} />
         ))}
 
         {isSpeaking && <TypingIndicator />}
