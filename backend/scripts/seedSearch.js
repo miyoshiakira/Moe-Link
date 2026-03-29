@@ -39,18 +39,6 @@ function buildIndexDefinition(name) {
       { name: 'category', type: 'Edm.String',  searchable: false, filterable: true  },
       { name: 'content',  type: 'Edm.String',  searchable: true,  filterable: false },
     ],
-    // セマンティック検索を有効化（Azure AI Search Standard 以上で利用可能）
-    semanticSearch: {
-      configurations: [
-        {
-          name: 'default',
-          prioritizedFields: {
-            titleField:   { fieldName: 'title'   },
-            contentFields: [{ fieldName: 'content' }],
-          },
-        },
-      ],
-    },
   }
 }
 
