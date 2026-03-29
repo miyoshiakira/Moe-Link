@@ -58,25 +58,36 @@ export function attachRelay(browserWs) {
       return
     }
 
+    // audio.delta 以外は全てログ出力
+    if (event.type !== 'response.audio.delta') {
+      console.log(`[Azure→] ${event.type}`)
+    }
+
     switch (event.type) {
       // ── セッション準備完了 ──
       case 'session.created':
+        console.log('[Relay] セッション確立 ID:', event.session?.id)
+        send(browserWs, { type: 'status', state: 'idle' })
+        break
       case 'session.updated':
         send(browserWs, { type: 'status', state: 'idle' })
         break
 
       // ── VAD：ユーザーが話し始めた ──
       case 'input_audio_buffer.speech_started':
+        console.log('[VAD] 発話検知')
         send(browserWs, { type: 'status', state: 'listening' })
         break
 
       // ── VAD：ユーザーが話し終わった ──
       case 'input_audio_buffer.speech_stopped':
+        console.log('[VAD] 発話終了 → 応答生成開始')
         send(browserWs, { type: 'status', state: 'thinking' })
         break
 
       // ── AI の応答生成が始まった ──
       case 'response.created':
+        console.log('[AI] 応答生成中...')
         send(browserWs, { type: 'status', state: 'speaking' })
         break
 

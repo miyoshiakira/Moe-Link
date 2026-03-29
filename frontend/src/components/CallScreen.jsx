@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRealtimeCall } from '../hooks/useRealtimeCall'
 
 function useCallTimer(active) {
@@ -45,7 +45,11 @@ export default function CallScreen({ onEnd }) {
   const timer = useCallTimer(phase === 'connected')
 
   // 画面を開いたら即接続
+  // useRef で StrictMode の二重実行（mount→unmount→mount）を防ぐ
+  const didConnect = useRef(false)
   useEffect(() => {
+    if (didConnect.current) return
+    didConnect.current = true
     connect()
     return () => disconnect()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
