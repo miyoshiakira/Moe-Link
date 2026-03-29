@@ -21,10 +21,10 @@ import { searchMemory } from './rag.js'
  */
 export function attachRelay(browserWs) {
   // Azure OpenAI Realtime API の WebSocket URL を構築
-  const { endpoint, apiKey, deployment, apiVersion } = config.azureOpenAI
-  const azureWsUrl =
-    `${endpoint.replace(/^https/, 'wss')}/openai/realtime` +
-    `?api-version=${apiVersion}&deployment=${deployment}`
+  // v1 GA エンドポイント形式（api-version パラメータ不要）
+  const { endpoint, apiKey, deployment } = config.azureOpenAI
+  const baseWss = endpoint.replace(/^https/, 'wss').replace(/\/$/, '')
+  const azureWsUrl = `${baseWss}/openai/v1/realtime?deployment=${deployment}`
 
   const azureWs = new WebSocket(azureWsUrl, {
     headers: { 'api-key': apiKey },

@@ -14,8 +14,7 @@ export const config = {
   azureOpenAI: {
     endpoint: required('AZURE_OPENAI_ENDPOINT'),
     apiKey: required('AZURE_OPENAI_API_KEY'),
-    deployment: process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-4o-realtime-preview',
-    apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2024-12-17',
+    deployment: process.env.AZURE_OPENAI_DEPLOYMENT || 'gpt-realtime-1.5',
   },
 
   azureSearch: {
